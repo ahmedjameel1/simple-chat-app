@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {%load static%}
+
 {%block content%}
     <div class="container p-0">
 		<h1 class="h3 mb-3">Logged in as {{request.user.username}}</h1>
@@ -58,7 +59,7 @@
 					</div>
 
 					<div class="position-relative">
-						<div class="chat-messages p-4">
+						<div id='chatBox' class="chat-messages p-4">
 							{% for nmessage in nmessages %}
 							{% if nmessage.sender == user %}
 							<div class="chat-message-right pb-4">
@@ -70,8 +71,8 @@
 									<div class="text-muted small text-nowrap mt-2">{{ nmessage.created }}</div>
 								</div>
 								{% if nmessage.sender == user %}
-								<div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
-									<div class="font-weight-bold mb-1">You</div>
+								<div  class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+									<div  class="font-weight-bold mb-1">You</div>
 									{{ nmessage.body }}
 								</div>
 							</div>
@@ -86,13 +87,13 @@
 							
 						</div>
 					</div>
-<form method='POST'>
+<form id="myform" method='POST'>
 					<div class="flex-grow-0 py-3 px-4 border-top">
 						<div class="input-group">
 							
 								{% csrf_token %}
-							<input type="text" class="form-control" name='body' placeholder="Type your message">
-							<button type='submit' class="btn btn-primary">Send</button>
+							<input type="text" id="msg" class="form-control" name='body' placeholder="Type your message">
+							<button type='submit' id="send-msg" class="btn btn-primary">Send</button>
 							
 						</div>
 					</div>
@@ -102,4 +103,52 @@
 		</div>
 	</div>
 </main>
+<script type='text/javascript'>
+
+	var myform = document.getElementById('myform');
+	var btn  = document.getElementById('send-msg');
+	var chatBox = document.getElementById('chatBox');
+	var myformData;
+	var myformProps;
+	var date = Date();
+	var ampm = date.slice(16,18) > 12 ? 'pm' : 'am'; 
+	var hhmmss = date.slice(0,24)+' '+ampm;
+
+	
+
+	myform.addEventListener('submit', (e) => {
+		e.preventDefault();
+		myformData = new FormData(e.target);
+  		myformProps = Object.fromEntries(myformData);
+		chatBox.innerHTML += `
+		<div class="chat-message-right pb-4">
+		<div>
+			<img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle mr-1" alt="Chris Wood" width="40" height="40">
+			<div class="text-muted small text-nowrap mt-2">${hhmmss}</div>
+		</div>
+		<div  class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+			<div  class="font-weight-bold mb-1">You</div>
+			${myformProps.body}
+		</div></div>
+		`
+		let input = document.getElementById('msg')
+		input.value = "";
+
+		var data = new FormData();
+		data.append('body', myformProps.body);
+		data.append('csrfmiddlewaretoken', myformProps.csrfmiddlewaretoken);
+		  
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', '', true);
+		xhr.onload = (e) => {
+			console.log(e);
+		};
+		xhr.send(data);
+		
+	})
+		
+		
+	
+	
+</script>
 {%endblock%}
